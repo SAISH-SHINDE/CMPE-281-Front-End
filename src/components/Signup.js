@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import history from "./history";
 import {actionsign} from '../actions/loginactions';
 import {connect} from 'react-redux';

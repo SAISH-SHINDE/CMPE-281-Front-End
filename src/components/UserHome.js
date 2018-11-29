@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
 import history from "./history";
 import '../App.css';
 import {Form, FormGroup, Label, Input,Table} from 'reactstrap';
+import {connect} from "react-redux";
+import {actiontemp,actionhumid,actiontable} from "../actions/loginactions";
 
 
 
@@ -14,37 +15,9 @@ class UserHome extends Component {
          block_id:1,
          value:"",
          device_type:"Temperature",
-         latest_temperature:"68F",
-         latest_humidity:"36%",
          table_flag:false,
          Humidity_flag:false,
-         temperature_flag:false,
-         device:[
-             {
-              devicetype:"Light Sensor",
-              deviceid: "Light sensor 1",
-              Location:"The Alameda",
-              installed:"11/01/2018",
-              maintanance:"11/08/2018",
-              devicehealth:"Healthy",
-             },
-             {
-                 devicetype:"Temperature Sensor",
-                 deviceid: "Temperature sensor 1",
-                 Location:"The Alameda",
-                 installed:"11/01/2018",
-                 maintanance:"11/08/2018",
-                 devicehealth:"Healthy",
-             },
-             {
-                 devicetype:"Humidity Sensor",
-                 deviceid: "Humidity Sensor 1",
-                 Location:"The Alameda",
-                 installed:"11/01/2018",
-                 maintanance:"11/08/2018",
-                 devicehealth:"Healthy",
-             }
-         ]
+         temperature_flag:false
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleChange1 = this.handleChange1.bind(this);
@@ -55,8 +28,8 @@ class UserHome extends Component {
     handleChange1(event){
         this.setState({street_name:event.target.value});
     }
+
     render() {
-        console.log("device--->", this.state.device_type);
         return (
             <div>
                 <div className="Topbar-userhome"/>
@@ -82,7 +55,6 @@ class UserHome extends Component {
                 <Form>
                     <FormGroup>
                         <Label className="Street_Name">Street_Name</Label>
-                        {/*<Input type="text"placeholder="enter the Street Name" />*/}
                         <Input type="select" onChange={this.handleChange1}>
                             <option value="The Alameda">The Alameda</option>
                             <option value="First & Santa clara">First & Santa clara</option>
@@ -91,10 +63,6 @@ class UserHome extends Component {
                         </Input>
                     </FormGroup>
                     <br/>
-                    {/*<FormGroup>*/}
-                        {/*<Label className="Street_Name">Block Id</Label>*/}
-                        {/*<Input type="text"placeholder="enter the Block Id" />*/}
-                    {/*</FormGroup>*/}
                     <FormGroup>
                         <Label className="Street_Name">Sensor Type</Label>
 
@@ -107,11 +75,13 @@ class UserHome extends Component {
                     </FormGroup>
                 </Form>
                 </div>
+
                 <button className="Device-search-btn" onClick={() => {
-                    this.setState({table_flag:true})
+                    this.setState({table_flag:true});
+                    this.props.table_data(this.state);
                 }}>Search Device</button>
                 {(() => {
-                   if(this.state.table_flag===true){
+                   if(this.props.tableData!==null && this.props.tableData!==undefined){
                        return(
                            <div className="Device-info-table">
                            <Table dark>
@@ -126,12 +96,12 @@ class UserHome extends Component {
                                </tr>
                                </thead>
                                <tbody>
-                               {this.state.device.map(row => {
+                               {this.props.tableData.map(row => {
                                    return(
                                        <tr>
                                            <td key={row.devicetype}>{row.devicetype}</td>
                                            <td key={row.deviceid}>{row.deviceid}</td>
-                                           <td key={row.Location}>{row.Location}</td>
+                                           <td key={row.location}>{row.location}</td>
                                            <td key={row.installed}>{row.installed}</td>
                                            <td key={row.maintanance}>{row.maintanance}</td>
                                            <td key={row.devicehealth}>{row.devicehealth}</td>
@@ -147,14 +117,16 @@ class UserHome extends Component {
                 )()}
 
                 <button className="Device-temperature-btn" onClick={() => {
-                    this.setState({temperature_flag:true})
+                    this.setState({temperature_flag:true});
+                    this.props.Temp(this.state);
                 }}>Get Latest Temperature</button>
+
                 {(() => {
-                    if(this.state.temperature_flag===true){
+                    if(this.props.temp!==null && this.props.temp!==undefined){
                         return(<div className="Device-info-temperature">
                                 <img className="temperature-data-logo" src={require("../images/temperature.JPG")}
                                      alt="281.App"/>
-                                <p className="temperature-data">{this.state.latest_temperature}</p>
+                                <p className="temperature-data">{this.props.temp}</p>
                             </div>
                         );
                     }
@@ -162,14 +134,16 @@ class UserHome extends Component {
                 )()}
 
                 <button className="Device-Humidity-btn" onClick={() => {
-                    this.setState({Humidity_flag:true})
+                    this.setState({Humidity_flag:true});
+                    this.props.Humid(this.state);
                 }}>Get Latest Humidity</button>
+
                 {(() => {
-                        if(this.state.Humidity_flag===true){
+                        if(this.props.humid!==null && this.props.humid!==undefined){
                             return(<div className="Device-info-Humidity">
                                <img className="Humidity-data-logo" src={require("../images/if_weather_44_2682807.png")}
                                alt="281.App"/>
-                               <p className="Humidity-data">{this.state.latest_humidity}</p>
+                               <p className="Humidity-data">{this.props.humid}</p>
                              </div>
                             );
                         }
@@ -179,5 +153,21 @@ class UserHome extends Component {
         );
     }
 }
+const mapDispatchToProps =(dispatch)=> {
+    return {
+        Temp : (data) => dispatch(actiontemp(data)),
+        Humid : (data) => dispatch(actionhumid(data)),
+        table_data: (data) => dispatch(actiontable(data))
+    };
+}
 
-export default withRouter(UserHome);
+const mapStateToProps =(stores)=> {
+
+    return {
+        temp: stores.stores.tempval,
+        humid:stores.stores.humival,
+        tableData:stores.stores.tableData
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserHome);
